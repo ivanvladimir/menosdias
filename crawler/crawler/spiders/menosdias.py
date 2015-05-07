@@ -3,21 +3,17 @@ import scrapy
 from crawler.items import PostItem
 from scrapy.contrib.spiders import Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.http                        import Request
 from bs4 import BeautifulSoup
 
 class MenosdiasSpider(scrapy.Spider):
     name = "menosdias"
-    allowed_domains = ["http://menosdiasaqui.blogspot.mx"]
+    depth_limit= 0 
+    allowed_domains = ["menosdiasaqui.blogspot.mx"]
     start_urls = (
-        'http://www.http://menosdiasaqui.blogspot.mx/',
+        'http://menosdiasaqui.blogspot.mx/',
     )
 
-
-    rules = [ 
-        Rule(
-            SgmlLinkExtractor(
-                allow=[r'\d{4}/\d{2}/\w+']),
-                callback='parse',follow=True)]
 
     def parse(self, response):
         for sel in response.xpath('//*[@class="date-outer"]'):
@@ -38,7 +34,10 @@ class MenosdiasSpider(scrapy.Spider):
             item['nameAuthor']=footer.xpath('.//span[@itemprop="name"]/text()').extract()
             item['datePublished']=footer.xpath('.//abbr[@itemprop="datePublished"]/@title').extract()
             item['url']=footer.xpath('.//a[@title="permanent link"]/@href').extract()
-            
+
+            links=sel.xpath('//a[@class="blog-pager-older-link"]/@href').extract()
+            for link in links:
+                yield Request(link,self.parse)
             yield item
 
     def strip_tags(self,html):
