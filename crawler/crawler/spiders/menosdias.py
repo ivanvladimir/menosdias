@@ -5,6 +5,7 @@ from scrapy.contrib.spiders import Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.http                        import Request
 from bs4 import BeautifulSoup
+from itertools import chain
 
 class MenosdiasSpider(scrapy.Spider):
     name = "menosdias"
@@ -27,13 +28,28 @@ class MenosdiasSpider(scrapy.Spider):
             # Extrae el cuerpo
             body=info_post.xpath('*/div[@class="post-body entry-content"]/div').extract()
             item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
+            if len(item['body'])==0:
+                body=info_post.xpath('*/div[@class="post-body entry-content"]/ul/li').extract()
+                item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
+            if len(item['body'])==0:
+                body=info_post.xpath('*/div[@class="post-body entry-content"]/span').extract()
+                item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
+            if len(item['body'])==0:
+                body=info_post.xpath('*/div[@class="post-body entry-content"]').extract()
+
+                item['body']=list(chain.from_iterable([[x for x in div.split('<br>') if len(x)>0 and not x.startswith('<')] for div in
+                                body]))
+
+
+
+
             mark=info_post.xpath('*/div[@class="post-body entry-content"]//b/text()').extract()
             item['mark']=[x for x in [m.strip() for m in mark] if len(x) > 0]
             # Extrae info footer
             footer=info_post.xpath('*/div[@class="post-footer"]')
             item['nameAuthor']=footer.xpath('.//span[@itemprop="name"]/text()').extract()
             item['datePublished']=footer.xpath('.//abbr[@itemprop="datePublished"]/@title').extract()
-            item['url']=footer.xpath('.//a[@title="permanent link"]/@href').extract()
+            item['url']=footer.xpath('.//a[@title="permanent link" and @class="timestamp-link"]/@href').extract()
 
             links=sel.xpath('//a[@class="blog-pager-older-link"]/@href').extract()
             for link in links:
