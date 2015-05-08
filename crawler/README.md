@@ -1,14 +1,14 @@
-> Crawler
+# Crawler
 
 Code for crawl menosdias website
 
->> Requeriments
+## Requeriments
 
 * [scrappy](http://scrapy.org/) python
  
     pip install scrapy
 
->> Usage
+## Usage
 
 Inside of crawler directory. For crawling website and saving entrance in json 
 format
