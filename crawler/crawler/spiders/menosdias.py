@@ -37,7 +37,7 @@ class MenosdiasSpider(scrapy.Spider):
             if len(item['body'])==0:
                 body=info_post.xpath('*/div[@class="post-body entry-content"]').extract()
 
-                item['body']=list(chain.from_iterable([[x for x in div.split('<br>') if len(x)>0 and not x.startswith('<')] for div in
+                item['body']=list(chain.from_iterable([[self.strip_tags(x) for x in div.split('<br>') if len(x)>0 and not x.startswith('<')] for div in
                                 body]))
 
 
