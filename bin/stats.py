@@ -28,13 +28,15 @@ if __name__ == "__main__":
     posts=utils.Posts(opts.POSTS)
 
     cw=Counter()
-    ws,la,ts=0,0,0
+    bi=Counter()
+    ws,ls,ts=0,0,0
     for date,tweet in tweets:
         tweet=tweet.lower()
         ls+=len(tweet)
         tweet=tweet.split()
         ws+=len(tweet)
         cw.update(tweet)
+        bi.update(zip(tweet,tweet[1:]))
         ts+=1
 
     print("Number of tweets        :",ts)
@@ -42,16 +44,31 @@ if __name__ == "__main__":
     print("Number of letters/tweet :",ls*1.0/ts)
     for w,c in cw.most_common(10):
         print("{0:<20}: {1}".format(w,c))
-        
+    print("10 most common bigram :")
+    for w,c in bi.most_common(10):
+        print("{0:<20}: {1}".format(w,c))
+      
     cw=Counter()
-   
+    bi=Counter()
+    ws,ls,ts=0,0,0
     for post in posts:
         post=post['body']
-        post=post.lower()
-        ls+=len(post)
-        post=post.split()
-        ws+=len(post)
-        cw.update(post)
-        ts+=1
+        for parr in post:
+            parr=parr.lower()
+            ls+=len(parr)
+            parr=parr.split()
+            ws+=len(parr)
+            cw.update(parr)
+            bi.update(zip(parr,parr[1:]))
+            ts+=1
 
-
+    print("Number of paragraphs        :",ts)
+    print("Number of words/paragraph   :",ws*1.0/ts)
+    print("Number of letters/paragraph :",ls*1.0/ts)
+    print("10 most common words :")
+    for w,c in cw.most_common(10):
+        print("{0:<20}: {1}".format(w,c))
+    print("10 most common bigram :")
+    for w,c in bi.most_common(10):
+        print("{0:<20}: {1}".format(w,c))
+   
