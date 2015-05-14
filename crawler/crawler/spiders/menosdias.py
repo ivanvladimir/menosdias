@@ -4,8 +4,12 @@ from crawler.items import PostItem
 from scrapy.contrib.spiders import Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.http                        import Request
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from itertools import chain
+import re
+
+re_tag=re.compile('<.*>')
+re_if=re.compile('\[ if.*\]')
 
 class MenosdiasSpider(scrapy.Spider):
     name = "menosdias"
@@ -14,6 +18,7 @@ class MenosdiasSpider(scrapy.Spider):
     start_urls = (
         'http://menosdiasaqui.blogspot.mx/',
     )
+
 
 
     def parse(self, response):
@@ -26,21 +31,19 @@ class MenosdiasSpider(scrapy.Spider):
             item['blogId']=info_post.xpath('div/meta[@itemprop="blogId"]/@content').extract()
             item['postId']=info_post.xpath('div/meta[@itemprop="postId"]/@content').extract()
             # Extrae el cuerpo
-            body=info_post.xpath('*/div[@class="post-body entry-content"]/div').extract()
-            item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
-            if len(item['body'])==0:
-                body=info_post.xpath('*/div[@class="post-body entry-content"]/ul/li').extract()
-                item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
-            if len(item['body'])==0:
-                body=info_post.xpath('*/div[@class="post-body entry-content"]/span').extract()
-                item['body']=[t for t in [self.strip_tags(div) for div in body] if len(t)>0]
-            if len(item['body'])==0:
-                body=info_post.xpath('*/div[@class="post-body entry-content"]').extract()
-
-                item['body']=list(chain.from_iterable([[self.strip_tags(x) for x in div.split('<br>') if len(x)>0 and not x.startswith('<')] for div in
-                                body]))
-
-
+            body=info_post.xpath('*/div[@class="post-body entry-content"]').extract()
+            body=[x for x in body if not x.startswith('[')]
+            item['body']=[]
+            for content in body:
+                content=BeautifulSoup(content)
+                comments = content.findAll(text=lambda text:isinstance(text, Comment))
+                [comment.extract() for comment in comments]
+                comments = content.findAll(text=lambda text:isinstance(text, Comment))
+                [comment.extract() for comment in comments]
+                text=content.text
+                text=re_tag.sub("",text)
+                text=re_if.sub("",text)
+                item['body'].append(text)
 
 
             mark=info_post.xpath('*/div[@class="post-body entry-content"]//b/text()').extract()
