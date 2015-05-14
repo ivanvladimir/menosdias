@@ -62,9 +62,9 @@ if __name__ == "__main__":
             bi.update(zip(parr,parr[1:]))
             ts+=1
 
-    print("Number of paragraphs        :",ts)
-    print("Number of words/paragraph   :",ws*1.0/ts)
-    print("Number of letters/paragraph :",ls*1.0/ts)
+    print("Number of posts        :",ts)
+    print("Number of words/post   :",ws*1.0/ts)
+    print("Number of letters/post :",ls*1.0/ts)
     print("10 most common words :")
     for w,c in cw.most_common(10):
         print("{0:<20}: {1}".format(w,c))

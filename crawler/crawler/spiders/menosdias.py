@@ -9,16 +9,16 @@ from itertools import chain
 import re
 
 re_tag=re.compile('<.*>')
-re_if=re.compile('\[ if.*\]')
+re_if=re.compile('\[if.*\]')
+link_re=re.compile('http://menosdiasaqui.blogspot.mx/\d\d\d\d/\d\d/.*.html')
 
 class MenosdiasSpider(scrapy.Spider):
     name = "menosdias"
     depth_limit= 0 
     allowed_domains = ["menosdiasaqui.blogspot.mx"]
     start_urls = (
-        'http://menosdiasaqui.blogspot.mx/',
+            'http://menosdiasaqui.blogspot.mx/2015/05/aguascalientes-10052015-jasmin.html',
     )
-
 
 
     def parse(self, response):
@@ -54,6 +54,10 @@ class MenosdiasSpider(scrapy.Spider):
             item['datePublished']=footer.xpath('.//abbr[@itemprop="datePublished"]/@title').extract()
             item['url']=footer.xpath('.//a[@title="permanent link" and @class="timestamp-link"]/@href').extract()
 
+            #links=sel.xpath('//ul[@class="posts"]/li/a/@href').extract()
+            #for link in links:
+            #    if link_re.match(link):
+            #        yield Request(link,self.parse)
             links=sel.xpath('//a[@class="blog-pager-older-link"]/@href').extract()
             for link in links:
                 yield Request(link,self.parse)
